@@ -15,32 +15,41 @@ const PostForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const postRequest = useCallback(()=>{
-    let requestNo: number = 0;
-    setIsLoading(true);
-    Env.instance.firestore
-      .collection("requests")
-      .get()
-      .then(result => {
-        requestNo = result.docs.length;
-        Env.instance.firestore
-          .collection("requests")
-          .doc((requestNo+1)+'')
-          .set({
-            time: new Date(),
-            syoyu: syoyu,
-            miso: miso,
-            tare: tare,
-            wiener: wiener
-          })
-          .then(() => {
-            console.log("Success: Document has written")
-            setIsLoading(false);
-          })
-          .catch(error => {
-            console.log("Error writing document: "+ error)
-            setIsLoading(false);
-          });
-      })
+    if(window.confirm(" お金はしっかり受け取りましたか? ")){
+      let requestNo: number = 0;
+      setIsLoading(true);
+      Env.instance.firestore
+        .collection("requests")
+        .get()
+        .then(result => {
+          requestNo = result.docs.length+1;
+          Env.instance.firestore
+            .collection("requests")
+            .doc(requestNo+'')
+            .set({
+              time: new Date(),
+              syoyu: syoyu,
+              miso: miso,
+              tare: tare,
+              wiener: wiener
+            })
+            .then(() => {
+              console.log("Success: Document has written")
+              setIsLoading(false);
+              alert(
+                "受付番号:"+requestNo+"\n"+
+                "醤油 x"+syoyu+"味噌 x"+miso+"タレ x"+tare+"ウィンナー x"+wiener
+              );
+              setSyoyu(0);
+              setMiso(0);
+              setTare(0);
+              setWiener(0);
+            })
+            .catch(error => {
+              console.log("Error writing document: "+ error)
+              setIsLoading(false);
+            });
+        })}
   },[syoyu,miso,tare,wiener]);
 
   return (
@@ -115,7 +124,7 @@ const PostForm: React.FC = () => {
         </PtText>
       </FormLine>
       <ButtonDiv onClick={postRequest}>
-        test
+        <b>注文を確定します</b>
       </ButtonDiv>
     </div>
   )
@@ -145,5 +154,4 @@ const ButtonDiv = styled.button`
   margin: 2px;
   padding: 10px;
   margin-top: 20px;
-  width: 20%;
 `;
