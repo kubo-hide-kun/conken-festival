@@ -50,7 +50,7 @@ const PostForm: React.FC = () => {
               setIsLoading(false);
             });
         })}
-  },[syoyu,miso,tare,wiener]);
+  },[syoyu,miso,tare,wiener,setIsLoading]);
 
   return (
     <div>

@@ -10,10 +10,12 @@ const App: React.FC = () => {
 
   const [userList, setUserList] = useState<{
     index: string,
+    time: string|Date,
     syoyu: string,
     miso: string,
     tare: string,
-    wiener: string
+    wiener: string,
+    isComplete: string|boolean
   }[]>([]);
 
   const [togglePage,switchPage] = useState<boolean>(false);
@@ -25,18 +27,22 @@ const App: React.FC = () => {
     userList.reverse();
     userList.unshift({
       index: "受付番号",
+      time: "注文時刻",
       syoyu: "醤油",
       miso: "味噌",
       tare: "タレ",
-      wiener: "ｳｨﾝﾅｰ"
+      wiener: "ｳｨﾝﾅｰ",
+      isComplete: "提供状況"
     })
     setReanderList(userList.map(user => (
       <UserLine
         index= {user.index}
+        time= {user.time}
         syoyu= {user.syoyu}
         miso= {user.miso}
         tare= {user.tare}
         wiener= {user.wiener}
+        isComplete= {user.isComplete}
       />
       )
     ));
@@ -56,10 +62,12 @@ const App: React.FC = () => {
           result.docs.map(doc => {
             return {
               index: doc.id,
+              time: doc.data().time,
               syoyu: doc.data().syoyu,
               miso: doc.data().miso,
               tare: doc.data().tare,
-              wiener: doc.data().wiener
+              wiener: doc.data().wiener,
+              isComplete: doc.data().isComplete,
             }
           })
         );
