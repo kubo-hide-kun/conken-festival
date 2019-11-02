@@ -8,25 +8,35 @@ import Env from "./firebase"
 
 const App: React.FC = () => {
 
-  const [isSigned, setIsSigned] = useState<boolean>(false);
-  const [passwd, setPasswd] = useState<string>('');
+  const [userList, setUserList] = useState<{
+    index: string,
+    syoyu: string,
+    miso: string,
+    tare: string,
+    wiener: string
+  }[]>([]);
 
-  const [user, setUser] = useState<string>('dummy_user');
-  const [userList, setUserList] = useState<{name:string, pt:number}[]>([]);
-  const [reanderList, setReanderList] = useState<JSX.Element[]>([]);
-
+  const [togglePage,switchPage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [reanderList, setReanderList] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     console.log(userList,"1.")
-    setReanderList(userList.map((user,index) => (
+    userList.reverse();
+    userList.unshift({
+      index: "受付番号",
+      syoyu: "醤油",
+      miso: "味噌",
+      tare: "タレ",
+      wiener: "ｳｨﾝﾅｰ"
+    })
+    setReanderList(userList.map(user => (
       <UserLine
-        deleteUserData={deleteUserData}
-        index={index}
-        name={user.name}
-        pt={user.pt}
-        updateUserData={updateUserData}
-        isSigned={isSigned}
+        index= {user.index}
+        syoyu= {user.syoyu}
+        miso= {user.miso}
+        tare= {user.tare}
+        wiener= {user.wiener}
       />
       )
     ));
@@ -36,67 +46,6 @@ const App: React.FC = () => {
     getAllUserData();
   }, []);
 
-  const unlockAdmin = useCallback(() => {
-    setIsSigned(passwd == 'inuadmin');
-    setUser('');
-    setPasswd('');
-    console.log(user);
-    console.log(passwd);
-    getAllUserData();
-  },[passwd]);
-
-  const deleteUserData = useCallback((name:string)=>{
-    if(!window.confirm(name+"を削除しても良いですか?")) return;
-    setIsLoading(true);
-    Env.instance.firestore
-      .collection("requests")
-      .doc(name)
-      .delete()
-      .then(() => {
-        console.log("Success: Document has written");
-        getAllUserData();
-        setIsLoading(false);
-      }).catch(error => {
-        console.log("Error writing document: "+ error)
-        setIsLoading(true);
-      });
-  },[])
-
-  const updateUserData = useCallback((name:string, pt:number)=>{
-    setIsLoading(true);
-    console.log('Start update =>',name,pt)
-    Env.instance.firestore
-      .collection("requests")
-      .doc(name)
-      .update({ Time:new Date() })
-      .then(() => {
-        console.log("Success: Document has written");
-        getAllUserData();
-        setIsLoading(false);
-      }).catch(error => {
-        console.log("Error writing document: "+ error)
-        setIsLoading(true);
-      });
-  },[])
-
-  const insertUserData = useCallback(()=>{
-    setIsLoading(true);
-    console.log('Start posting =>',user)
-    Env.instance.firestore
-      .collection("requests")
-      .doc("user")
-      .set({ Time:new Date() })
-      .then(() => {
-        console.log("Success: Document has written");
-        getAllUserData();
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.log("Error writing document: "+ error);
-        setIsLoading(false);
-      });
-  },[user])
-
   const getAllUserData = useCallback(()=>{
     setIsLoading(true);
     Env.instance.firestore
@@ -105,7 +54,13 @@ const App: React.FC = () => {
       .then(result => {
         setUserList(
           result.docs.map(doc => {
-            return {name:doc.id,pt:doc.data().pt}
+            return {
+              index: doc.id,
+              syoyu: doc.data().syoyu,
+              miso: doc.data().miso,
+              tare: doc.data().tare,
+              wiener: doc.data().wiener
+            }
           })
         );
         setIsLoading(false);
@@ -116,52 +71,16 @@ const App: React.FC = () => {
       })
   },[])
 
-  const sortList = useCallback(()=>{
-    console.log(
-      userList.sort((a,b) => {
-        if(a.pt == b.pt)return 0;
-        return a.pt < b.pt ? 1 : -1;
-    }))
-    setUserList(
-      userList.sort((a,b) => {
-        if(a.pt == b.pt)return 0;
-        return a.pt < b.pt ? 1 : -1;
-      })
-    );
-    setReanderList(userList.map((user,index) => (
-      <UserLine
-        index={index}
-        name={user.name}
-        pt={user.pt}
-        updateUserData={updateUserData}
-        deleteUserData={deleteUserData}
-        isSigned={isSigned}
-      />
-    )))
-  },[userList])
-
-  const retireAdmin = useCallback(()=>{
-    setIsSigned(false);
-    getAllUserData();
-  },[]);
-
   return (
     <MainBack>
       {isLoading && <Loading/>}
-      <PostForm />
-      <YButton onClick={insertUserData}>
-        test
-      </YButton>
-
-      <YButton onClick={sortList}>
-        sort
-      </YButton>
-
       <YButton onClick={getAllUserData}>
-        reload
+        <b>ページ更新</b>
       </YButton>
-      {isSigned && <YButton onClick={retireAdmin}>retire</YButton>}
-      {reanderList}
+      <YButton onClick={()=>switchPage(!togglePage)}>
+        <b>ページ切り替え</b>
+      </YButton>
+      {togglePage ?<PostForm />:reanderList}
     </MainBack>
   );
 }
@@ -181,13 +100,6 @@ const YButton = styled.button`
   margin: 2px;
   padding: 10px;
   width: 20%;
-`;
-
-const YInput = styled.input`
-  padding: 10px;
-  margin: 5px 2px;
-  border-color: black;
-  width: 60%;
 `;
 
 export default App;

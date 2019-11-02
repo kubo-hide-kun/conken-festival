@@ -2,37 +2,34 @@ import React, {useState} from 'react';
 import styled from 'styled-components';
 
 type Props = {
-    index: number
-    name: string;
-    pt: number;
-    updateUserData: (name: string, pt: number) => void;
-    deleteUserData: (name: string) => void;
-    isSigned: boolean;
+    index: string,
+    syoyu: string,
+    miso: string,
+    tare: string,
+    wiener: string
 }
 
 const UserLine: React.FC<Props> = (props:Props) => {
-
-    const [addPt, setAddPt] = useState(0);
-
-    return (
+  return (
     <div>
-        <div>
-            <Ynum>
-                {props.index+1} 
-            </Ynum>
-            <YLine>
-                {props.name}
-            </YLine>
-            <Ypt>
-              {props.pt}pt 
-            </Ypt>
-        </div>
-        {props.isSigned && [
-            <YInput type="number" onChange={e => setAddPt(parseInt(e.target.value))}/>,
-            <YButton onClick={() => props.updateUserData(props.name,props.pt+addPt)}>+</YButton>,
-            <YButton onClick={() => props.deleteUserData(props.name)}>x</YButton>
-        ]}
-    </div>)
+      <div>
+        <Ynum>
+          <b>{props.index}</b>
+        </Ynum>
+        <Ynum>
+          <b>{props.syoyu}</b>
+        </Ynum>
+        <Ynum>
+          <b>{props.miso}</b>
+        </Ynum>
+        <Ynum>
+          <b>{props.tare}</b>
+        </Ynum>
+        <Ynum>
+          <b>{props.wiener}</b>
+        </Ynum>
+    </div>
+  </div>)
 }
 
 export default UserLine;
