@@ -15,7 +15,8 @@ const App: React.FC = () => {
     miso: string,
     tare: string,
     wiener: string,
-    isComplete: string|boolean
+    isComplete: string|boolean,
+    getAllUserData: () => void
   }[]>([]);
 
   const [togglePage,switchPage] = useState<boolean>(false);
@@ -23,8 +24,11 @@ const App: React.FC = () => {
   const [reanderList, setReanderList] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
-    console.log(userList,"1.")
-    userList.reverse();
+    userList.sort((a, b) => {
+      if (parseInt(a.index) > parseInt(b.index)) return -1;
+      if (parseInt(a.index) < parseInt(b.index)) return 1;
+      return 0;
+  });
     userList.unshift({
       index: "受付番号",
       time: "注文時刻",
@@ -32,7 +36,8 @@ const App: React.FC = () => {
       miso: "味噌",
       tare: "タレ",
       wiener: "ｳｨﾝﾅｰ",
-      isComplete: "提供状況"
+      isComplete: "提供状況",
+      getAllUserData: getAllUserData
     })
     setReanderList(userList.map(user => (
       <UserLine
@@ -43,6 +48,7 @@ const App: React.FC = () => {
         tare= {user.tare}
         wiener= {user.wiener}
         isComplete= {user.isComplete}
+        getAllUserData= {getAllUserData}
       />
       )
     ));
@@ -68,6 +74,7 @@ const App: React.FC = () => {
               tare: doc.data().tare,
               wiener: doc.data().wiener,
               isComplete: doc.data().isComplete,
+              getAllUserData: getAllUserData
             }
           })
         );

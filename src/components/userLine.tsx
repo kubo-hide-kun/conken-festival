@@ -1,28 +1,36 @@
 import React, {useState, useCallback} from 'react';
+import Button from '@material-ui/core/Button'
+import BlockIcon from '@material-ui/icons/Block';
 import styled from 'styled-components';
 import Loading from './Loading';
 import Env from "../firebase"
 
 type Props = {
-    index: string,
+    index: string|number,
     time: string|Date,
-    syoyu: string,
-    miso: string,
-    tare: string,
-    wiener: string,
-    isComplete: string|boolean
+    syoyu: string|number,
+    miso: string|number,
+    tare: string|number,
+    wiener: string|number,
+    isComplete: string|boolean,
+    getAllUserData: () => void
 }
 
 const UserLine: React.FC<Props> = (props:Props) => {
 
+  const [syoyu, setSyoyu] = useState(props.syoyu);
+  const [miso, setMiso] = useState(props.miso);
+  const [tare, setTare] = useState(props.tare);
+  const [wiener, setWiener] = useState(props.wiener);
   const [isComplete, setIsComplete] = useState(props.isComplete);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const switchIsComplete = useCallback(()=>{
+    props.getAllUserData();
     setIsLoading(true);
     Env.instance.firestore
       .collection("requests")
-      .doc(props.index)
+      .doc(props.index+'')
       .update({
         time: props.time,
         syoyu: props.syoyu,
@@ -31,8 +39,8 @@ const UserLine: React.FC<Props> = (props:Props) => {
         wiener: props.wiener,
         isComplete:!props.isComplete
       })
-      .then(result => {
-        console.log(result);
+      .then(() => {
+        console.log("()=>",isComplete);
         setIsLoading(false);
         setIsComplete(!isComplete);
       })
@@ -40,6 +48,37 @@ const UserLine: React.FC<Props> = (props:Props) => {
         console.log(error);
         setIsLoading(false);
       })
+  },[props,isComplete])
+
+
+  const CancellOrder = useCallback(()=>{
+    if(window.confirm("本当に"+props.index+"の注文を削除しても良いですか?")) {
+      props.getAllUserData();
+      setIsLoading(true);
+      Env.instance.firestore
+        .collection("requests")
+        .doc(props.index+'')
+        .update({
+          time: props.time,
+          syoyu: 0,
+          miso: 0,
+          tare: 0,
+          wiener: 0,
+          isComplete: true
+        })
+        .then(() => {
+          console.log("remove",props.index);
+          setIsLoading(false);
+          setSyoyu(0);
+          setMiso(0);
+          setTare(0);
+          setWiener(0);
+        })
+        .catch(error => {
+          console.log(error);
+          setIsLoading(false);
+        })
+    }
   },[props,isComplete])
 
   return (
@@ -62,7 +101,15 @@ const UserLine: React.FC<Props> = (props:Props) => {
           <b>{props.wiener}</b>
         </Ynum>
         {
-          props.isComplete=="提供状況"
+          (miso == 0 
+            && syoyu == 0 
+            && tare == 0
+            && wiener == 0
+          )
+          ?<Ynum>
+          <b>キャンセルしました</b>
+          </Ynum>
+          :props.isComplete=="提供状況"
           ?<Ynum>
             <b>提供状況</b>
           </Ynum>
@@ -74,6 +121,9 @@ const UserLine: React.FC<Props> = (props:Props) => {
           <b>未提供</b>
         </RedFlag>)
         }
+        <Button onClick={CancellOrder}>
+          <BlockIcon />
+        </Button>
     </div>
   </div>)
 }

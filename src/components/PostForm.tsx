@@ -31,7 +31,8 @@ const PostForm: React.FC = () => {
               syoyu: syoyu,
               miso: miso,
               tare: tare,
-              wiener: wiener
+              wiener: wiener,
+              isComplete: false
             })
             .then(() => {
               console.log("Success: Document has written")
